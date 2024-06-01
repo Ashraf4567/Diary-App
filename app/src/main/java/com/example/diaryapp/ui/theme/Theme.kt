@@ -89,14 +89,7 @@ fun DiaryAppTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColors
-        else -> LightColors
-    }
+    val colorScheme = if (darkTheme) DarkColors else LightColors
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -119,6 +112,19 @@ fun DiaryAppTheme(
 
         windowsInsetsController.isAppearanceLightStatusBars = !darkTheme
         windowsInsetsController.isAppearanceLightNavigationBars = !darkTheme
+    }
+
+    SideEffect {
+        val window = (view.context as Activity).window
+        window.statusBarColor = Color.Transparent.toArgb()
+        window.navigationBarColor = Color.Transparent.toArgb()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
+        val windowInsetsController = WindowCompat.getInsetsController(window , view)
+
+        windowInsetsController.isAppearanceLightStatusBars = !darkTheme
+        windowInsetsController.isAppearanceLightNavigationBars = !darkTheme
     }
 
     MaterialTheme(
