@@ -1,5 +1,6 @@
 package com.example.diaryapp.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +52,8 @@ fun DiaryHolder(
 ) {
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
+
+    var galleryOpen by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier.clickable(
@@ -94,6 +98,19 @@ fun DiaryHolder(
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis
                 )
+                if (diary.images.isNotEmpty()) {
+                    ShowGalleryButton(
+                        galleryOpen = galleryOpen,
+                        onClick = {
+                            galleryOpen = !galleryOpen
+                        }
+                    )
+                }
+                AnimatedVisibility(visible = galleryOpen) {
+                    Column(modifier = Modifier.padding(all = 14.dp)) {
+                        Gallery(images = diary.images)
+                    }
+                }
             }
 
         }
@@ -142,16 +159,17 @@ fun DiaryHeader(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun DiaryHolderPrev(modifier: Modifier = Modifier) {
-    DiaryAppTheme {
-        DiaryHolder(diary = Diary().apply {
-            title = "My Diary"
-            description = "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like)."
-            mood = Mood.Happy.name
-        }) {
-
-        }
+fun ShowGalleryButton(
+    modifier: Modifier = Modifier,
+    galleryOpen: Boolean,
+    onClick: () -> Unit
+) {
+    TextButton(onClick = onClick) {
+        Text(
+            text = if (galleryOpen) "Hide Gallery" else "Show Gallery"  ,
+            style = TextStyle(fontSize = MaterialTheme.typography.bodySmall.fontSize)
+            )
     }
+
 }
