@@ -68,11 +68,3 @@ fun DateHolder(
     }
 
 }
-
-@Preview(showBackground = true)
-@Composable
-private fun DiaryHolderPrev() {
-    DiaryAppTheme {
-        DateHolder(localDateTime = LocalDateTime.now())
-    }
-}
