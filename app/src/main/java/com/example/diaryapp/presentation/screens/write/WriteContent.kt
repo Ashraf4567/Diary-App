@@ -118,9 +118,7 @@ fun WriteContent(
                 ),
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
-                ),
-                maxLines = 1,
-                singleLine = true
+                )
             )
 
         }

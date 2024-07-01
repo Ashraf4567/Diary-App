@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -66,7 +67,7 @@ fun DiaryHolder(
                 MutableInteractionSource()
             }
         ) {
-            onDiaryClick(diary._id.toString())
+            onDiaryClick(diary._id.toHexString())
         }
     ) {
         Spacer(modifier = Modifier.width(14.dp))
@@ -91,10 +92,12 @@ fun DiaryHolder(
             tonalElevation = Elevation.level1
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                DiaryHeader(
-                    moodName = diary.mood,
-                    time = diary.date.toInstant()
-                )
+                key(diary.mood) {
+                    DiaryHeader(
+                        moodName = diary.mood,
+                        time = diary.date.toInstant()
+                    )
+                }
                 Text(
                     modifier = Modifier.padding(14.dp),
                     text = diary.description,

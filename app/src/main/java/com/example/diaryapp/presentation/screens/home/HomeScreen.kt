@@ -39,10 +39,10 @@ import com.example.diaryapp.util.RequestState
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
     diaries: Diaries,
     onMenuClick: () -> Unit,
     navigateToWriteScreen: () -> Unit,
+    navigateToWriteWithArgs: (String) -> Unit,
     drawerState: DrawerState,
     onSignOutClick: () -> Unit
 ) {
@@ -68,7 +68,11 @@ fun HomeScreen(
             content = {
                 when(diaries){
                     is RequestState.Success -> {
-                        HomeContent(diaryNotes = diaries.data , onDiaryClick = {} , paddingValues = it)
+                        HomeContent(
+                            diaryNotes = diaries.data,
+                            onDiaryClick = navigateToWriteWithArgs,
+                            paddingValues = it
+                        )
                     }
                     is RequestState.Error -> {
                         EmptyPage(
@@ -81,7 +85,9 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator()
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                     else -> {}
