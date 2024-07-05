@@ -1,5 +1,6 @@
 package com.example.diaryapp.data.repository
 
+import android.util.Log
 import com.example.diaryapp.model.Diary
 import com.example.diaryapp.util.Constants.APP_ID
 import com.example.diaryapp.util.RequestState
@@ -7,6 +8,7 @@ import com.example.diaryapp.util.toInstant
 import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.log.LogLevel
+import io.realm.kotlin.log.RealmLog.remove
 import io.realm.kotlin.mongodb.App
 import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.query.Sort
@@ -77,6 +79,65 @@ object MongoDB: MongoRepository {
             }
         } else {
             flow { emit(RequestState.Error(UserNotAuthenticatedException("User not logged in"))) }
+        }
+    }
+
+    override suspend fun addNewDiary(diary: Diary): RequestState<Diary> {
+        return if (user != null) {
+            realm.write {
+                try {
+                    val addedDiary = copyToRealm(diary.apply { ownerId = user.id })
+                    RequestState.Success( data =  addedDiary)
+                }catch (e: Exception){
+                    Log.d("MongoDB Error" , e.message.toString())
+                    RequestState.Error(e)
+                }
+            }
+        }else{
+            return RequestState.Error(UserNotAuthenticatedException("User not logged in"))
+        }
+    }
+
+    override suspend fun updateDiary(diary: Diary): RequestState<Diary> {
+        return if(user != null){
+            realm.write {
+                val queryDiary = query<Diary>( query = "_id == $0" , diary._id).first().find()
+                if (queryDiary != null) {
+                    queryDiary.title = diary.title
+                    queryDiary.description = diary.description
+                    queryDiary.date = diary.date
+                    queryDiary.images = diary.images
+                    queryDiary.mood = diary.mood
+                    RequestState.Success(data = queryDiary)
+                }else{
+                    RequestState.Error(Exception("Queried diary not found"))
+                }
+            }
+
+        }else{
+            return RequestState.Error(UserNotAuthenticatedException("User not logged in"))
+        }
+    }
+
+    override suspend fun deleteDiary(diaryId: ObjectId): RequestState<Diary> {
+        return if (user != null) {
+            realm.write {
+                val queryDiary = query<Diary>(query = "_id == $0 AND ownerId == $1" , diaryId , user.id).first().find()
+                if (queryDiary != null) {
+                    try {
+
+                        delete(queryDiary)
+                        RequestState.Success(data = queryDiary)
+                    }catch (e: Exception){
+                        RequestState.Error(e)
+                    }
+                }else{
+                    RequestState.Error(Exception("Queried diary not found"))
+                }
+
+            }
+        }else{
+            return RequestState.Error(UserNotAuthenticatedException("User not logged in"))
         }
     }
 }

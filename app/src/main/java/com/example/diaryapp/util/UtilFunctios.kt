@@ -15,3 +15,13 @@ fun RealmInstant.toInstant(): Instant {
 
     }
 }
+
+fun Instant.toRealmInstant(): RealmInstant {
+    var sec: Long = this.epochSecond
+    val nano: Int = this.nano
+    return if (sec >= 0){
+        RealmInstant.from(sec, nano)
+    } else {
+        RealmInstant.from(sec+1, -1_000_000+nano)
+    }
+}

@@ -1,6 +1,7 @@
 package com.example.diaryapp.navigation
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -201,6 +203,7 @@ fun NavGraphBuilder.writeRoute(
     ){
         val viewModel: WriteViewModel = viewModel()
         val uiState = viewModel.uiState
+        val context = LocalContext.current
         val pagerState = rememberPagerState(pageCount = {
             Mood.values().size
         })
@@ -218,10 +221,31 @@ fun NavGraphBuilder.writeRoute(
             uiState = uiState,
             onBackPressed = onBackPressed,
             moodName = {Mood.values()[pageNumber].name},
-            onDeleteConfirmed = {},
+            onDeleteConfirmed = {
+                viewModel.deleteDiary(
+                    onSuccess = {
+                        Toast.makeText(context,"Diary Deleted", Toast.LENGTH_SHORT).show()
+                        onBackPressed()
+                    },
+                    onError = {
+                        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                        Log.d("WriteScreen", "WriteScreen: $it")
+                    }
+                )
+            },
             pagerState = pagerState,
             onTitleChange = viewModel::setTitle,
             onDescriptionChange = viewModel::setDescription,
+            onSavedClicked = {
+                viewModel.upsertDiary(
+                    diary = it.apply { mood = Mood.values()[pageNumber].name },
+                    onSuccess = {onBackPressed()},
+                    onError = {message->
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    }
+                )
+            },
+            onDateAndTimeUpdated = {viewModel.updateDateAndTime(it)}
         )
     }
 }
