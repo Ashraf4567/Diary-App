@@ -3,13 +3,8 @@ package com.example.diaryapp.navigation
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,8 +23,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.diaryapp.data.repository.MongoDB
-import com.example.diaryapp.model.Diary
+import com.example.diaryapp.model.GalleryImage
 import com.example.diaryapp.model.Mood
 import com.example.diaryapp.presentation.components.DisplayAlertDialog
 import com.example.diaryapp.presentation.screens.auth.AuthenticationScreen
@@ -41,7 +34,8 @@ import com.example.diaryapp.presentation.screens.write.WriteScreen
 import com.example.diaryapp.presentation.screens.write.WriteViewModel
 import com.example.diaryapp.util.Constants.APP_ID
 import com.example.diaryapp.util.Constants.WRITE_SCREEN_ARGUMENT_KEY
-import com.example.diaryapp.util.RequestState
+import com.example.diaryapp.model.RequestState
+import com.example.diaryapp.model.rememberGalleryState
 import com.stevdzasan.messagebar.rememberMessageBarState
 import com.stevdzasan.onetap.rememberOneTapSignInState
 import io.realm.kotlin.mongodb.App
@@ -115,7 +109,7 @@ fun NavGraphBuilder.authenticationRoute(
                 oneTapState.open()
                 viewModel.setLoadingState(true)
             },
-            onTokenIdReceived = {token->
+            onSuccessfulFirebaseSignIn = { token->
 
                 viewModel.signInWithMongoAtlas(
                     tokenId = token,
@@ -128,6 +122,10 @@ fun NavGraphBuilder.authenticationRoute(
                         viewModel.setLoadingState(false)
                     }
                 )
+            },
+            onFailedFirebaseSignIn = {
+                messageBarState.addError(it)
+                viewModel.setLoadingState(false)
             },
             onDialogDismissed = {message->
                 messageBarState.addError(Exception(message))
@@ -202,6 +200,7 @@ fun NavGraphBuilder.writeRoute(
         route = Screens.Write.route
     ){
         val viewModel: WriteViewModel = viewModel()
+        val galleryState = viewModel.galleryState
         val uiState = viewModel.uiState
         val context = LocalContext.current
         val pagerState = rememberPagerState(pageCount = {
@@ -245,7 +244,16 @@ fun NavGraphBuilder.writeRoute(
                     }
                 )
             },
-            onDateAndTimeUpdated = {viewModel.updateDateAndTime(it)}
+            onDateAndTimeUpdated = {viewModel.updateDateAndTime(it)},
+            galleryState = galleryState,
+            onImageSelected = {uri->
+                val type = context.contentResolver.getType(uri)?.split("/")?.last()?:"jpg"
+                Log.d("WriteViewModel", "$uri")
+                viewModel.addImage(
+                    image = uri,
+                    imageType = type
+                )
+            }
         )
     }
 }

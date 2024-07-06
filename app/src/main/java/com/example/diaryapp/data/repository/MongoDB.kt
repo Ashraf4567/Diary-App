@@ -3,12 +3,11 @@ package com.example.diaryapp.data.repository
 import android.util.Log
 import com.example.diaryapp.model.Diary
 import com.example.diaryapp.util.Constants.APP_ID
-import com.example.diaryapp.util.RequestState
+import com.example.diaryapp.model.RequestState
 import com.example.diaryapp.util.toInstant
 import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.log.LogLevel
-import io.realm.kotlin.log.RealmLog.remove
 import io.realm.kotlin.mongodb.App
 import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.query.Sort

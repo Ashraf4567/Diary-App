@@ -1,5 +1,6 @@
 package com.example.diaryapp.presentation.screens.write
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +41,10 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.diaryapp.model.Diary
+import com.example.diaryapp.model.GallerySate
 import com.example.diaryapp.model.Mood
+import com.example.diaryapp.presentation.components.GalleryUploader
+import io.realm.kotlin.ext.toRealmList
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -51,6 +55,8 @@ fun WriteContent(
     pagerState: PagerState,
     title: String,
     description: String,
+    galleryState: GallerySate,
+    onImageSelected: (Uri) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onTitleChange: (String) -> Unit,
     onSaveClicked: (Diary) -> Unit
@@ -159,6 +165,13 @@ fun WriteContent(
             verticalArrangement = Arrangement.Bottom
         ) {
             Spacer(modifier = Modifier.height(12.dp))
+            GalleryUploader(
+                gallerySate = galleryState,
+                onAddClicked = { focusManager.clearFocus() },
+                onImageSelected = onImageSelected,
+                onImageClicked = {}
+            )
+            Spacer(modifier = Modifier.height(12.dp))
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -169,6 +182,7 @@ fun WriteContent(
                             Diary().apply {
                                 this.title = uiState.title
                                 this.description = uiState.description
+                                this.images = galleryState.images.map { it.remotePath }.toRealmList()
                             }
                         )
                     }else{

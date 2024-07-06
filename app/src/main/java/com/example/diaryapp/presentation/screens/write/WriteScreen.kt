@@ -1,6 +1,7 @@
 package com.example.diaryapp.presentation.screens.write
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.Scaffold
@@ -8,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import com.example.diaryapp.model.Diary
+import com.example.diaryapp.model.GallerySate
 import com.example.diaryapp.model.Mood
 import java.time.ZonedDateTime
 
@@ -23,7 +25,9 @@ fun WriteScreen(
     onDateAndTimeUpdated: (ZonedDateTime) -> Unit,
     onDeleteConfirmed: () -> Unit,
     pagerState: PagerState,
-    onSavedClicked: (Diary) -> Unit
+    onImageSelected: (Uri) -> Unit,
+    onSavedClicked: (Diary) -> Unit,
+    galleryState: GallerySate
 ) {
 
     LaunchedEffect(key1 = uiState.mood) {
@@ -49,7 +53,9 @@ fun WriteScreen(
                 onTitleChange = onTitleChange ,
                 description = uiState.description,
                 onDescriptionChange =onDescriptionChange,
-                onSaveClicked = onSavedClicked
+                onSaveClicked = onSavedClicked,
+                galleryState = galleryState,
+                onImageSelected = onImageSelected
             )
         }
     )
