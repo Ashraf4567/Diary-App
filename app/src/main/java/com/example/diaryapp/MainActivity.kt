@@ -7,11 +7,13 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
+import com.example.diaryapp.data.database.ImageToDeleteDao
 import com.example.diaryapp.data.database.ImageToUploadDao
 import com.example.diaryapp.navigation.Screens
 import com.example.diaryapp.navigation.SetUpNavGraph
 import com.example.diaryapp.ui.theme.DiaryAppTheme
 import com.example.diaryapp.util.Constants.APP_ID
+import com.example.diaryapp.util.retryDeleteImageFromFirebase
 import com.example.diaryapp.util.retryUploadImageToFirebase
 import com.google.firebase.FirebaseApp
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,6 +28,8 @@ class MainActivity : ComponentActivity() {
     var keepSplashScreen = true
     @Inject
     lateinit var imageToUploadDao: ImageToUploadDao
+    @Inject
+    lateinit var imageToDeleteDao: ImageToDeleteDao
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
@@ -45,13 +49,18 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-        cleanupCheck(lifecycleScope, imageToUploadDao)
+        cleanupCheck(
+            lifecycleScope,
+            imageToUploadDao,
+            imageToDeleteDao
+        )
     }
 }
 
 private fun cleanupCheck(
     scope: CoroutineScope,
-    imageToUploadDao: ImageToUploadDao
+    imageToUploadDao: ImageToUploadDao,
+    imageToDeleteDao: ImageToDeleteDao
 ){
     scope.launch(Dispatchers.IO) {
         val result = imageToUploadDao.getAllImages()
@@ -64,6 +73,14 @@ private fun cleanupCheck(
                     }
                 }
             )
+        }
+        val resultToDelete = imageToDeleteDao.getAll()
+        resultToDelete.forEach {imageToDelete ->
+            retryDeleteImageFromFirebase(imageToDelete){
+                scope.launch(Dispatchers.IO) {
+                    imageToDeleteDao.cleanUpImage(imageToDelete.id)
+                }
+            }
         }
     }
 }

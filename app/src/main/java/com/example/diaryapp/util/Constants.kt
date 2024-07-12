@@ -10,4 +10,6 @@ object Constants {
     const val IMAGES_DATABASE = "Images_db"
     const val IMAGES_TO_UPLOAD_TABLE = "Image_to_upload_table"
 
+    const val IMAGES_TO_DELETE_TABLE = "Images_to_delete_table"
+
 }

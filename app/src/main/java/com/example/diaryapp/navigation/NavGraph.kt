@@ -146,10 +146,12 @@ fun NavGraphBuilder.homeRoute(
     onDataLoaded: () -> Unit
 ){
     composable(route = Screens.Home.route){
-        val viewModel: HomeViewModel = viewModel()
+        val viewModel: HomeViewModel = hiltViewModel()
         val diaries by viewModel.diaries
+        val context = LocalContext.current
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         var signOutDialogOpen by remember { mutableStateOf(false) }
+        var deleteAllDialogOpen by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
         LaunchedEffect(key1 = diaries){
             if(diaries !is RequestState.Loading){
@@ -166,7 +168,11 @@ fun NavGraphBuilder.homeRoute(
             navigateToWriteScreen = navigateToWrite,
             drawerState = drawerState,
             onSignOutClick = {signOutDialogOpen = true},
-            navigateToWriteWithArgs = navigateToWriteWithArgs
+            navigateToWriteWithArgs = navigateToWriteWithArgs,
+            onDeleteAllClick = {deleteAllDialogOpen = true},
+            dateSelected = viewModel.dateIsSelected,
+            onDateSelected = {viewModel.getDiaries(it)},
+            onDateReset = {viewModel.getDiaries()}
         )
 
         DisplayAlertDialog(
@@ -181,6 +187,38 @@ fun NavGraphBuilder.homeRoute(
                     withContext(Dispatchers.Main){
                         navigateToAuth()
                     }
+                }
+            }
+        )
+        DisplayAlertDialog(
+            title ="Delete All Diaries",
+            message ="Are you sure you want to Delete All Diaries?",
+            dialogOpen = deleteAllDialogOpen,
+            onCloseDialog = {deleteAllDialogOpen = false},
+            onYesClick = {
+                coroutineScope.launch(Dispatchers.IO) {
+                    viewModel.deleteAllDiaries(
+                        onSuccess = {
+                            Toast.makeText(
+                                context,
+                                "All Diaries Deleted",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            coroutineScope.launch {
+                                drawerState.close()
+                            }
+                        },
+                        onError = {
+                            Toast.makeText(
+                                context,
+                                if (it.message == "No Internet Connection") it.message else "Failed to Delete All Diaries",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            coroutineScope.launch {
+                                drawerState.close()
+                            }
+                        }
+                    )
                 }
             }
         )
@@ -254,6 +292,9 @@ fun NavGraphBuilder.writeRoute(
                     image = uri,
                     imageType = type
                 )
+            },
+            onImageDeleteClicked = {
+                galleryState.removeImage(it)
             }
         )
     }
