@@ -19,8 +19,10 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.ZonedDateTime
@@ -50,12 +52,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    @OptIn(FlowPreview::class)
     private fun observeAllDiaries() {
         allDiariesJob = viewModelScope.launch {
             if (::filteredDiariesJob.isInitialized){
                 filteredDiariesJob.cancelAndJoin()
             }
-            MongoDB.getAllDiaries().collect{res->
+            MongoDB.getAllDiaries().debounce(2000).collect{res->
                 diaries.value = res
             }
         }
