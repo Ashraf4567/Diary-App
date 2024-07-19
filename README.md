@@ -1,4 +1,5 @@
-#Diary App
+##Diary App
+
 Diary App is an Android application that allows users to store their daily diaries. Users can choose a mood, add a title and description, and attach photos from their device. The app utilizes modularization and integrates various technologies including Firebase for storage, MongoDB for database, Room for caching data, Hilt for dependency injection, and Jetpack Compose for UI.
 
 ## Features
