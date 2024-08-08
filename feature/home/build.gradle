@@ -1,0 +1,65 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.jetbrains.kotlin.android)
+    id 'io.realm.kotlin'
+    id 'com.google.devtools.ksp'
+    id 'dagger.hilt.android.plugin'
+}
+
+android {
+    namespace 'com.example.home'
+    compileSdk ProjectConfig.compileSdk
+
+    defaultConfig {
+        ProjectConfig.minSdk
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion ProjectConfig.extentionVersion
+    }
+}
+
+dependencies {
+
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.activity.compose
+    implementation libs.material3
+
+    implementation libs.firebase.auth.ktx
+    implementation libs.firebase.storage.ktx
+
+    implementation libs.kotlinx.coroutines.core
+    implementation libs.library.sync
+
+    implementation libs.sheets.compose.dialogs.calendar
+
+    implementation libs.androidx.hilt.navigation.compose
+    implementation libs.hilt.android
+    ksp libs.hilt.compiler
+    implementation libs.hilt.android.v2481
+
+    implementation project(':core:util')
+    implementation project(':data:mongo')
+    implementation project(':core:ui')
+
+}
