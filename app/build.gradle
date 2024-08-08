@@ -9,6 +9,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('F:\\android dev\\portfolio\\key_for_diary.jks')
+            storePassword '@As112233'
+            keyAlias 'release-key'
+            keyPassword '@As112233'
+        }
+    }
     namespace 'com.example.diaryapp'
     compileSdk ProjectConfig.compileSdk
 
@@ -29,6 +37,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {

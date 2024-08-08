@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -104,7 +106,8 @@ fun WriteScreen(
                                     onImageDeleteClicked(selectedGalleryImage!!)
                                     selectedGalleryImage = null
                                 }
-                            }
+                            },
+                            galleryState = galleryState
                         )
                     }
                 }
@@ -113,12 +116,16 @@ fun WriteScreen(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ZoomableImage(
-    selectedGalleryImage: GalleryImage,
+    galleryState: GallerySate,
+    selectedGalleryImage: GalleryImage?,
     onCloseClicked: () -> Unit,
     onDeleteClicked: () -> Unit
 ) {
+    val pagerState = rememberPagerState(pageCount = { galleryState.images.size })
+
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
     var scale by remember { mutableFloatStateOf(1f) }
@@ -136,22 +143,24 @@ fun ZoomableImage(
                 }
             }
     ) {
-        AsyncImage(
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer(
-                    scaleX = maxOf(.5f, minOf(3f, scale)),
-                    scaleY = maxOf(.5f, minOf(3f, scale)),
-                    translationX = offsetX,
-                    translationY = offsetY
-                ),
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(selectedGalleryImage.imageUri.toString())
-                .crossfade(true)
-                .build(),
-            contentScale = ContentScale.Fit,
-            contentDescription = "Gallery Image"
-        )
+        HorizontalPager(state = pagerState) { page ->
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(
+                        scaleX = maxOf(.5f, minOf(3f, scale)),
+                        scaleY = maxOf(.5f, minOf(3f, scale)),
+                        translationX = offsetX,
+                        translationY = offsetY
+                    ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(galleryState.images[page].imageUri)
+                    .crossfade(true)
+                    .build(),
+                contentScale = ContentScale.Fit,
+                contentDescription = "Gallery Image"
+            )
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
